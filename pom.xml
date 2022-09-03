@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>whatif</groupId>
+  <artifactId>cmake-connector</artifactId>
+  <version>0.1.1</version>
+  <packaging>pom</packaging>
+
+  <properties>
+    <CONFIG>Release</CONFIG>
+  </properties>
+  <profiles>
+    <profile>
+      <id>Darwin</id>
+      <activation>
+        <os>
+          <name>mac os x</name>
+          <family>mac</family>
+          <arch>aarch64</arch>
+        </os>
+      </activation>
+      <properties>
+        <BINARY_ID>Darwin</BINARY_ID>
+      </properties>
+    </profile>
+  </profiles>
+  <build>
+    <sourceDirectory>${project.basedir}/src</sourceDirectory>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.codehaus.gmaven</groupId>
+          <artifactId>groovy-maven-plugin</artifactId>
+          <version>2.1.1</version>
+          <executions>
+            <execution>
+              <phase>initialize</phase>
+              <configuration>
+                <source>
+                  new File("${project.build.sourceDirectory}/maven.cmake").withWriter { out ->
+                    out.println "set(VERSION ${project.version})"
+                    for (dep in project.getDependencies()) {
+                      out.println "set(${dep.getArtifactId()}_VERSION ${dep.getVersion()})"
+                      out.println "set(${dep.getArtifactId()}_ROOT ${project.build.directory}/dependency/${dep.getArtifactId()}-${dep.getVersion()}-${BINARY_ID}-${CONFIG}-tar.gz/)"
+                    }
+                  }
+                </source>
+              </configuration>
+              <goals>
+                <goal>execute</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>3.3.0</version>
+          <executions>
+            <execution>
+              <id>unpack-dependencies</id>
+              <configuration>
+                <useSubDirectoryPerArtifact>true</useSubDirectoryPerArtifact>
+              </configuration>
+              <goals>
+                <goal>unpack-dependencies</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>3.1.0</version>
+          <executions>
+            <execution>
+              <id>cmake-generate</id>
+              <phase>generate-resources</phase>
+              <configuration>
+                <executable>cmake</executable>
+                <commandlineArgs>-S "${project.build.sourceDirectory}" -B "${project.build.directory}" -D CMAKE_BUILD_TYPE="${CONFIG}"</commandlineArgs>
+              </configuration>
+              <goals>
+                <goal>exec</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>cmake-build</id>
+              <phase>compile</phase>
+              <configuration>
+                <executable>cmake</executable>
+                <commandlineArgs>--build ${project.build.directory} --config "${CONFIG}"</commandlineArgs>
+              </configuration>
+              <goals>
+                <goal>exec</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>cpack</id>
+              <phase>package</phase>
+              <configuration>
+                <executable>cpack</executable>
+                <commandlineArgs>-G TGZ -C "${CONFIG}" -D CPACK_PACKAGE_FILE_NAME="${project.artifactId}-${project.version}-${BINARY_ID}-${CONFIG}"</commandlineArgs>
+                <workingDirectory>${project.build.directory}</workingDirectory>
+              </configuration>
+              <goals>
+                <goal>exec</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>3.3.0</version>
+          <executions>
+            <execution>
+              <phase>package</phase>
+              <configuration>
+                <artifacts>
+                  <artifact>
+                    <file>${project.build.directory}/${project.artifactId}-${project.version}-${BINARY_ID}-${CONFIG}.tar.gz</file>
+                    <type>tar.gz</type>
+                    <classifier>${BINARY_ID}-${CONFIG}</classifier>
+                  </artifact>
+                </artifacts>
+              </configuration>
+              <goals>
+                <goal>attach-artifact</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+</project>
