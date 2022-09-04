@@ -10,7 +10,7 @@ file(GLOB_RECURSE Sources LIST_DIRECTORIES FALSE CONFIGURE_DEPENDS *.cpp)
 
 add_executable(alien ${Sources})
 
-target_link_libraries(alien log4cpp::log4cpp)
+target_link_libraries(alien PRIVATE log4cpp::log4cpp)
 
 install(TARGETS alien)
 include(CPack)

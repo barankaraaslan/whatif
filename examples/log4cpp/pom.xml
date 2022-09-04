@@ -15,11 +15,25 @@
   <version>0.1.1</version>
   <packaging>pom</packaging>
 
+  <dependencies>
+    <dependency>
+      <groupId>whatif</groupId>
+      <artifactId>messages</artifactId>
+      <version>0.1.1</version>
+      <type>tar.gz</type>
+      <classifier>${BINARY_ID}-${CONFIG}</classifier>
+    </dependency>
+  </dependencies>
+
   <build>
     <plugins>
       <plugin>
         <groupId>org.codehaus.gmaven</groupId>
         <artifactId>groovy-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>

@@ -6,8 +6,10 @@ project(log4cpp VERSION ${VERSION} DESCRIPTION "A logger that may wreak havoc in
 
 # Collect all cpp source files
 file(GLOB_RECURSE Sources LIST_DIRECTORIES FALSE CONFIGURE_DEPENDS *.cpp)
-
 add_library(log4cpp ${Sources})
+
+find_package(messages REQUIRED)
+target_link_libraries(log4cpp PRIVATE messages::messages)
 
 # Note that each public header file is added individually, 
 # if you want a header to be visible to dependent projects, you must add it below

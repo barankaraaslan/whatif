@@ -42,7 +42,7 @@
                 <source>
                   new File("${project.build.sourceDirectory}/maven.cmake").withWriter { out ->
                     out.println "set(VERSION ${project.version})"
-                    for (dep in project.getDependencies()) {
+                    for (dep in project.getArtifacts()) {
                       out.println "set(${dep.getArtifactId()}_VERSION ${dep.getVersion()})"
                       out.println "set(${dep.getArtifactId()}_ROOT ${project.build.directory}/dependency/${dep.getArtifactId()}-${dep.getVersion()}-${BINARY_ID}-${CONFIG}-tar.gz/)"
                     }
